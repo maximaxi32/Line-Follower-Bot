@@ -1,0 +1,10 @@
+~~RoboRangers~~
+Members: 
+1. Lakshya
+2. Osim
+3. Swamil
+
+Contributions:
+The program was developed by all three members, the Initial calibration was
+done by Lakshya, while smoothening and dealing with sharp turn edge cases was
+done by Swamil and Osim.  

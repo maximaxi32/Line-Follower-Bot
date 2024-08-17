@@ -1,0 +1,99 @@
+(* LAB4 *)
+
+(* RoboRangers *)
+
+const black_threshold: int = 550               (*Threshold value for black line*)
+const white_threshold: int = 550               (*Threshold value for white line*)
+
+const kp: int = 10                        (*Proportional constant for PID*)
+const kd: int = 120                          (*Derivative constant for PID*)
+
+const base_drive: int = 28         (*Base drive value for white line*)
+const base_drive_black: int = 35          (*Base drive value for black line*)
+
+(*Functions to check if velocity values don't become invalid*)
+node max_black(a:int) returns (b:int)
+let
+b = if a<0 then 0 else if a>80 then 68 else a
+tel
+
+node max(a:int) returns (b:int)
+let
+b = if a<0 then 0 else if a>35 then 30 else a
+tel
+
+(*PID control for white line*)
+node pid_control_white(sen0, sen1, sen3, sen4,sen2:int) returns (v_l, v_r: int)
+var 
+  error_val : int;
+  pid_val,p,d : int;
+let
+    (* error_val = ((4*sen0 + 2*sen1) - (2*sen3 + 4*sen4));       *)
+    error_val = ((4*sen0 + 2*sen1) - (2*sen3 + 4*sen4) - (if sen2<750 then sen2 else 0));      
+    p = error_val/2 ;                                  (*Error value calculation*)  
+    d= 0->(p-pre(p));
+    pid_val = d / kd +  p / kp;
+    v_l= max(base_drive - pid_val);                 (*Adjusting motor values according to PID*)
+    v_r= max(base_drive + pid_val);
+tel
+
+(*PID control for black line*)
+node pid_control_black(sen0, sen1, sen3, sen4:int) returns (v_l, v_r: int)
+var 
+  error_val : int;
+  pid_val,p,d : int;
+let
+    error_val = ((3*sen0 + 2*sen1) - (2*sen3 + 3*sen4));
+    p = error_val/2 ;
+    (* d = p - (0->pre(error_val)); *)
+    d= 0->(p-pre(p));
+    pid_val = d / kd +  p / kp;
+    v_l= 15->max_black(base_drive_black + pid_val);
+    v_r= 15->max_black(base_drive_black - pid_val);
+tel
+
+node main(sen4, sen3, sen2, sen1, sen0: int) returns (v_l, v_r, dir: int)
+var sen: int^5;
+last node_count:int=0;              (*Keep count of nodes*)
+let
+    sen = [sen0, sen1, sen2, sen3, sen4]; 
+
+  (*Automaton core logic*)
+    automaton
+    (*Initial state for White Line Following*)
+      state White_Line_Follower
+      var temp: int;
+          cnt: int;
+      do
+        (v_l, v_r) = pid_control_white(sen0, sen1, sen3, sen4,sen2);
+        dir = 2;
+        temp = sen0+ sen1+ sen3+ sen4+sen2;
+        cnt = 0 -> if(temp>3500) then pre(cnt) + 1 else pre(cnt);
+      (* until temp > 3000 and sen2< black_threshold and sen0 > white_threshold and sen1>white_threshold and sen3 > white_threshold  then Black_Line_Follower    --Switching Color *)
+      until cnt>50 then Black_Line_Follower
+      (*Black Line Following*)
+      state Black_Line_Follower
+      do
+        (v_l, v_r) = pid_control_black(sen0, sen1, sen3, sen4);
+        dir = 2;
+      until sen2>200 and sen2< black_threshold and sen1 < black_threshold and sen0<black_threshold and sen3 < black_threshold  and sen4 < black_threshold then Black_Node_Turner
+      | last node_count = 4 and sen2< black_threshold and sen1 < black_threshold  and sen3 < black_threshold then Parking
+      | last node_count = 5 then Parking
+     
+      (*Take Turns at Node*)
+      state Black_Node_Turner
+      do
+      node_count = last node_count+1;
+      (v_l , v_r) = (-2,-2);   (*Send signal to supervisor*)
+      dir=node_count;
+      until true then Black_Line_Follower                    (*Immediately revert back to black line following after turning*)
+      (*Parking State*)
+      state Parking
+      do
+      node_count = last node_count+1;
+        (v_l, v_r) = (-3,-3);                       (*Send signal to supervisor*)
+        dir = 2;
+      until true then Black_Line_Follower
+      
+    end
+ tel

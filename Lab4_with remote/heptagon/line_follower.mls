@@ -1,0 +1,234 @@
+type st = St_White_Line_Follower|St_Parking|St_Black_Node_Turner|
+  St_Black_Line_Follower
+const black_threshold = 550
+const white_threshold = 550
+const kp = 10
+const kd = 120
+const base_drive = 28
+const base_drive_black = 35
+node max_black(a : int) returns (b : int)
+var v : bool; v_1 : bool; v_2 : int;
+let
+  b = if v then 0 else v_2;
+  v_2 = if v_1 then 68 else a;
+  v_1 = (a > 80);
+  v = (a < 0)
+tel
+
+node max(a : int) returns (b : int)
+var v : bool; v_3 : bool; v_4 : int;
+let
+  b = if v then 0 else v_4;
+  v_4 = if v_3 then 30 else a;
+  v_3 = (a > 35);
+  v = (a < 0)
+tel
+
+node pid_control_white(sen0 : int; sen1 : int; sen3 : int; sen4 : int;
+                        sen2 : int)
+returns (v_l : int; v_r : int)
+var d : int; p : int; pid_val : int; error_val : int; v : int; v_5 : int;
+    v_6 : int; v_7 : int; v_8 : int; v_9 : int; v_10 : int; v_11 : bool;
+    v_12 : int; v_13 : bool; v_14 : int; v_15 : int; v_16 : int; v_17 : int;
+    v_18 : int; v_19 : int;
+let
+  v_r = max(v_19);
+  v_19 = (base_drive + pid_val);
+  v_l = max(v_18);
+  v_18 = (base_drive - pid_val);
+  pid_val = (v_16 + v_17);
+  v_17 = (p / kp);
+  v_16 = (d / kd);
+  d = if v_13 then 0 else v_15;
+  v_15 = (p - v_14);
+  v_14 = pre p;
+  v_13 = true fby false;
+  p = (error_val / 2);
+  error_val = (v_10 - v_12);
+  v_12 = if v_11 then sen2 else 0;
+  v_11 = (sen2 < 750);
+  v_10 = (v_6 - v_9);
+  v_9 = (v_7 + v_8);
+  v_8 = (4 * sen4);
+  v_7 = (2 * sen3);
+  v_6 = (v + v_5);
+  v_5 = (2 * sen1);
+  v = (4 * sen0)
+tel
+
+node pid_control_black(sen0 : int; sen1 : int; sen3 : int; sen4 : int)
+returns (v_l : int; v_r : int)
+var d : int; p : int; pid_val : int; error_val : int; v : int; v_20 : int;
+    v_21 : int; v_22 : int; v_23 : int; v_24 : int; v_25 : bool; v_26 : int;
+    v_27 : int; v_28 : int; v_29 : int; v_30 : bool; v_31 : int; v_32 : int;
+    v_33 : bool; v_34 : int; v_35 : int;
+let
+  v_r = if v_33 then 15 else v_35;
+  v_35 = max_black(v_34);
+  v_34 = (base_drive_black - pid_val);
+  v_33 = true fby false;
+  v_l = if v_30 then 15 else v_32;
+  v_32 = max_black(v_31);
+  v_31 = (base_drive_black + pid_val);
+  v_30 = true fby false;
+  pid_val = (v_28 + v_29);
+  v_29 = (p / kp);
+  v_28 = (d / kd);
+  d = if v_25 then 0 else v_27;
+  v_27 = (p - v_26);
+  v_26 = pre p;
+  v_25 = true fby false;
+  p = (error_val / 2);
+  error_val = (v_21 - v_24);
+  v_24 = (v_22 + v_23);
+  v_23 = (3 * sen4);
+  v_22 = (2 * sen3);
+  v_21 = (v + v_20);
+  v_20 = (2 * sen1);
+  v = (3 * sen0)
+tel
+
+node main(sen4 : int; sen3 : int; sen2 : int; sen1 : int; sen0 : int)
+returns (v_l : int; v_r : int; dir : int)
+var node_count : int; sen : int^5; node_count_1 : int; pnr : bool; nr : bool;
+    r : bool; ns : st; ck : st; v_l_St_White_Line_Follower : int;
+    v_r_St_White_Line_Follower : int; dir_St_White_Line_Follower : int;
+    node_count_St_White_Line_Follower : int; ns_St_White_Line_Follower : st;
+    nr_St_White_Line_Follower : bool; v_l_St_Black_Line_Follower : int;
+    v_r_St_Black_Line_Follower : int; dir_St_Black_Line_Follower : int;
+    node_count_St_Black_Line_Follower : int; ns_St_Black_Line_Follower : st;
+    nr_St_Black_Line_Follower : bool; v_l_St_Black_Node_Turner : int;
+    v_r_St_Black_Node_Turner : int; dir_St_Black_Node_Turner : int;
+    node_count_St_Black_Node_Turner : int; ns_St_Black_Node_Turner : st;
+    nr_St_Black_Node_Turner : bool; v_l_St_Parking : int;
+    v_r_St_Parking : int; dir_St_Parking : int; node_count_St_Parking : int;
+    ns_St_Parking : st; nr_St_Parking : bool; cnt : int; temp : int;
+    r_2 : bool; v_58 : bool; v_59 : int; v_60 : int; v_61 : int; v_62 : bool;
+    v_63 : bool; v_64 : bool; v_65 : int; v_66 : int; v_67 : int; v_68 : int;
+    r_1 : bool; v : bool; v_36 : bool; v_37 : bool; v_38 : bool; v_39 : bool;
+    v_40 : bool; v_41 : bool; v_42 : bool; v_43 : bool; v_44 : bool;
+    v_45 : bool; v_46 : bool; v_47 : bool; v_48 : bool; v_49 : bool;
+    v_50 : bool; v_51 : bool; v_52 : bool; v_53 : bool; v_54 : st;
+    v_55 : bool; v_56 : st; v_57 : bool;
+let
+  node_count_1 = 0 fby node_count;
+  r = pnr;
+  pnr = false fby nr;
+  ck = St_White_Line_Follower fby ns;
+  node_count_St_White_Line_Follower =
+    (node_count_1 when St_White_Line_Follower(ck));
+  cnt = if v_63 then 0 else v_68;
+  v_68 = if v_64 then v_66 else v_67;
+  v_67 = pre cnt;
+  v_66 = (v_65 + 1);
+  v_65 = pre cnt;
+  v_64 = (temp > 3500);
+  v_63 = if v_62 then true else (r when St_White_Line_Follower(ck));
+  v_62 = true fby false;
+  temp = (v_61 + (sen2 when St_White_Line_Follower(ck)));
+  v_61 = (v_60 + (sen4 when St_White_Line_Follower(ck)));
+  v_60 = (v_59 + (sen3 when St_White_Line_Follower(ck)));
+  v_59 =
+    ((sen0 when St_White_Line_Follower(ck)) +
+     (sen1 when St_White_Line_Follower(ck)));
+  dir_St_White_Line_Follower = 2;
+  (v_l_St_White_Line_Follower, v_r_St_White_Line_Follower) =
+    pid_control_white
+    ((sen0 when St_White_Line_Follower(ck)),
+      (sen1 when St_White_Line_Follower(ck)),
+      (sen3 when St_White_Line_Follower(ck)),
+      (sen4 when St_White_Line_Follower(ck)),
+      (sen2 when St_White_Line_Follower(ck))) every r_2;
+  nr_St_White_Line_Follower = if v_58 then true else false;
+  ns_St_White_Line_Follower =
+    if v_58 then St_Black_Line_Follower else St_White_Line_Follower;
+  v_58 = (cnt > 50);
+  r_2 = (r when St_White_Line_Follower(ck));
+  node_count_St_Black_Line_Follower =
+    (node_count_1 when St_Black_Line_Follower(ck));
+  dir_St_Black_Line_Follower = 2;
+  (v_l_St_Black_Line_Follower, v_r_St_Black_Line_Follower) =
+    pid_control_black
+    ((sen0 when St_Black_Line_Follower(ck)),
+      (sen1 when St_Black_Line_Follower(ck)),
+      (sen3 when St_Black_Line_Follower(ck)),
+      (sen4 when St_Black_Line_Follower(ck))) every r_1;
+  nr_St_Black_Line_Follower = if v_45 then true else v_57;
+  ns_St_Black_Line_Follower = if v_45 then St_Black_Node_Turner else v_56;
+  v_57 = if v_52 then true else v_55;
+  v_56 = if v_52 then St_Parking else v_54;
+  v_55 = if v_53 then true else false;
+  v_54 = if v_53 then St_Parking else St_Black_Line_Follower;
+  v_53 = ((node_count_1 when St_Black_Line_Follower(ck)) = 5);
+  v_52 = (v_50 & v_51);
+  v_51 = ((sen3 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_50 = (v_48 & v_49);
+  v_49 = ((sen1 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_48 = (v_46 & v_47);
+  v_47 = ((sen2 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_46 = ((node_count_1 when St_Black_Line_Follower(ck)) = 4);
+  v_45 = (v_43 & v_44);
+  v_44 = ((sen4 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_43 = (v_41 & v_42);
+  v_42 = ((sen3 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_41 = (v_39 & v_40);
+  v_40 = ((sen0 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_39 = (v_37 & v_38);
+  v_38 = ((sen1 when St_Black_Line_Follower(ck)) < black_threshold);
+  v_37 = (v & v_36);
+  v_36 = ((sen2 when St_Black_Line_Follower(ck)) < black_threshold);
+  v = ((sen2 when St_Black_Line_Follower(ck)) > 200);
+  r_1 = (r when St_Black_Line_Follower(ck));
+  dir_St_Black_Node_Turner = (node_count when St_Black_Node_Turner(ck));
+  v_r_St_Black_Node_Turner = ~-(2);
+  v_l_St_Black_Node_Turner = ~-(2);
+  node_count_St_Black_Node_Turner =
+    ((node_count_1 when St_Black_Node_Turner(ck)) + 1);
+  nr_St_Black_Node_Turner = if true then true else false;
+  ns_St_Black_Node_Turner =
+    if true then St_Black_Line_Follower else St_Black_Node_Turner;
+  dir_St_Parking = 2;
+  v_r_St_Parking = ~-(3);
+  v_l_St_Parking = ~-(3);
+  node_count_St_Parking = ((node_count_1 when St_Parking(ck)) + 1);
+  nr_St_Parking = if true then true else false;
+  ns_St_Parking = if true then St_Black_Line_Follower else St_Parking;
+  v_l =
+    merge ck
+      (St_Parking -> v_l_St_Parking)
+      (St_Black_Node_Turner -> v_l_St_Black_Node_Turner)
+      (St_Black_Line_Follower -> v_l_St_Black_Line_Follower)
+      (St_White_Line_Follower -> v_l_St_White_Line_Follower);
+  v_r =
+    merge ck
+      (St_Parking -> v_r_St_Parking)
+      (St_Black_Node_Turner -> v_r_St_Black_Node_Turner)
+      (St_Black_Line_Follower -> v_r_St_Black_Line_Follower)
+      (St_White_Line_Follower -> v_r_St_White_Line_Follower);
+  dir =
+    merge ck
+      (St_Parking -> dir_St_Parking)
+      (St_Black_Node_Turner -> dir_St_Black_Node_Turner)
+      (St_Black_Line_Follower -> dir_St_Black_Line_Follower)
+      (St_White_Line_Follower -> dir_St_White_Line_Follower);
+  node_count =
+    merge ck
+      (St_Parking -> node_count_St_Parking)
+      (St_Black_Node_Turner -> node_count_St_Black_Node_Turner)
+      (St_Black_Line_Follower -> node_count_St_Black_Line_Follower)
+      (St_White_Line_Follower -> node_count_St_White_Line_Follower);
+  ns =
+    merge ck
+      (St_Parking -> ns_St_Parking)
+      (St_Black_Node_Turner -> ns_St_Black_Node_Turner)
+      (St_Black_Line_Follower -> ns_St_Black_Line_Follower)
+      (St_White_Line_Follower -> ns_St_White_Line_Follower);
+  nr =
+    merge ck
+      (St_Parking -> nr_St_Parking)
+      (St_Black_Node_Turner -> nr_St_Black_Node_Turner)
+      (St_Black_Line_Follower -> nr_St_Black_Line_Follower)
+      (St_White_Line_Follower -> nr_St_White_Line_Follower);
+  sen = [sen0; sen1; sen2; sen3; sen4]
+tel
+

@@ -1,0 +1,48 @@
+
+const threshold: int = 200
+
+
+const kp: int = 10
+const kd: int = 120
+
+const base_drive: int = 35
+
+type modeswitch =  One | Two 
+
+node max(a:int) returns (b:int)
+let
+b = if a<0 then 0 else if a>50 then 35 else a
+tel
+
+node pid_control(sen0, sen1, sen3, sen4:int) returns (v_l, v_r: int)
+var 
+  error_val : int;
+  pid_val,p,d : int;
+let
+    error_val = ((3*sen0 + 2*sen1) - (2*sen3 + 3*sen4));
+    p = error_val/2;
+    (* d = p - (0->pre(error_val)); *)
+    d= 0->(p-pre(p));
+    pid_val = d / kd +  p / kp;
+    v_l= max(base_drive - pid_val);
+    v_r= max(base_drive + pid_val);
+tel
+
+node main(sen4, sen3, sen2, sen1, sen0: int) returns (v_l, v_r, dir: int)
+var sen: int^5; modnum : modeswitch;
+let
+    sen = [sen0, sen1, sen2, sen3, sen4]; 
+    modnum = 
+               if sen2> threshold then One
+              else Two;
+    switch modnum
+    
+      |One do
+        (v_l, v_r) = pid_control(sen0, sen1, sen3, sen4);
+        dir = 2;
+      |Two do
+        v_l = base_drive;
+        v_r = base_drive;
+        dir = 2;
+    end
+ tel

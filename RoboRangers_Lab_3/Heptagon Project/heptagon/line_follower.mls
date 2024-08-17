@@ -1,0 +1,64 @@
+const threshold = 200
+const kp = 10
+const kd = 120
+const base_drive = 35
+type modeswitch = One|Two
+node max(a : int) returns (b : int)
+var v : bool; v_1 : bool; v_2 : int;
+let
+  b = if v then 0 else v_2;
+  v_2 = if v_1 then 35 else a;
+  v_1 = (a > 50);
+  v = (a < 0)
+tel
+
+node pid_control(sen0 : int; sen1 : int; sen3 : int; sen4 : int)
+returns (v_l : int; v_r : int)
+var d : int; p : int; pid_val : int; error_val : int; v : int; v_3 : int;
+    v_4 : int; v_5 : int; v_6 : int; v_7 : int; v_8 : bool; v_9 : int;
+    v_10 : int; v_11 : int; v_12 : int; v_13 : int; v_14 : int;
+let
+  v_r = max(v_14);
+  v_14 = (base_drive + pid_val);
+  v_l = max(v_13);
+  v_13 = (base_drive - pid_val);
+  pid_val = (v_11 + v_12);
+  v_12 = (p / kp);
+  v_11 = (d / kd);
+  d = if v_8 then 0 else v_10;
+  v_10 = (p - v_9);
+  v_9 = pre p;
+  v_8 = true fby false;
+  p = (error_val / 2);
+  error_val = (v_4 - v_7);
+  v_7 = (v_5 + v_6);
+  v_6 = (3 * sen4);
+  v_5 = (2 * sen3);
+  v_4 = (v + v_3);
+  v_3 = (2 * sen1);
+  v = (3 * sen0)
+tel
+
+node main(sen4 : int; sen3 : int; sen2 : int; sen1 : int; sen0 : int)
+returns (v_l : int; v_r : int; dir : int)
+var modnum : modeswitch; sen : int^5; v : bool; ck : modeswitch;
+    v_l_One : int; v_r_One : int; dir_One : int; v_l_Two : int;
+    v_r_Two : int; dir_Two : int;
+let
+  ck = modnum;
+  dir_One = 2;
+  (v_l_One, v_r_One) =
+    pid_control
+    ((sen0 when One(ck)), (sen1 when One(ck)), (sen3 when One(ck)),
+      (sen4 when One(ck)));
+  dir_Two = 2;
+  v_r_Two = base_drive;
+  v_l_Two = base_drive;
+  v_l = merge ck (Two -> v_l_Two)(One -> v_l_One);
+  v_r = merge ck (Two -> v_r_Two)(One -> v_r_One);
+  dir = merge ck (Two -> dir_Two)(One -> dir_One);
+  modnum = if v then One else Two;
+  v = (sen2 > threshold);
+  sen = [sen0; sen1; sen2; sen3; sen4]
+tel
+
